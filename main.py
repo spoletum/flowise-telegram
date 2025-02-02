@@ -14,15 +14,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         fr"Hi {user.mention_markdown_v2()}\!",
     )
 
-
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle a message."""
-    response = flowiseClient.create_prediction(PredictionData(question=update.message.text, chatflowId=chatflowId, streaming=False))
+
+    # Extract the session id from the message
+    session_id = update.message.from_user.id
+
+    # Create a prediction
+    response = flowiseClient.create_prediction(PredictionData(question=update.message.text, chatflowId=chatflowId, streaming=False, chatId=session_id))
     # Extract text from the response
     response_text = ""
     for item in response:
-        print(item)
         response_text += item["text"]
+    # Escape special characters for markdown v2
     await update.message.reply_text(response_text)
 
 if __name__ == "__main__":
@@ -49,7 +53,6 @@ if __name__ == "__main__":
         raise ValueError("TELEGRAM_API_KEY not found in environment variables")
     application = Application.builder().token(TELEGRAM_API_KEY).build()
     application.add_handler(MessageHandler(filters.TEXT, handle_message))
-    application.add_handler(CommandHandler("start", start))
 
     # Run the bot
     application.run_polling()
