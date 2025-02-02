@@ -7,15 +7,14 @@ WORKDIR /app
 RUN pip install poetry
 
 # Copy project files
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml poetry.lock README.md ./
 COPY main.py .
-COPY .env .
 
 # Configure Poetry to not create a virtual environment
 RUN poetry config virtualenvs.create false
 
-# Install dependencies
-RUN poetry install --no-dev --no-interaction --no-ansi
+# Install dependencies (only production)
+RUN poetry install --only main --no-interaction --no-ansi --no-root
 
 # Run the bot
 CMD ["python", "main.py"]
